@@ -4,7 +4,7 @@ L.Control.Image = L.Control.extend({
 	},
 
 	onAdd: function (map) {
-		var className = 'leaflet-control-image',
+		var className = 'leaflet-controllable-image-overlay',
 		    container = L.DomUtil.create('div', className + ' leaflet-bar');
 
 		this._map = map;
