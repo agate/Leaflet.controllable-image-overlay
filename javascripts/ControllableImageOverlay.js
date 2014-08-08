@@ -1,8 +1,4 @@
-/*
- * L.ImageOverlay is used to overlay images over the map (to specific geographical bounds).
- */
-
-L.ImageOverlay = L.Class.extend({
+L.ControllableImageOverlay = L.Class.extend({
 	includes: L.Mixin.Events,
 
 	options: {
@@ -15,7 +11,6 @@ L.ImageOverlay = L.Class.extend({
 
 	initialize: function (url, bounds, options) { // (String, LatLngBounds, Object)
 		this._url = url;
-		this._bounds = L.latLngBounds(bounds);
 
 		L.setOptions(this, options);
 	},
@@ -26,6 +21,11 @@ L.ImageOverlay = L.Class.extend({
 		if (!this._image) {
 			this._initImage();
 		}
+
+    if (!this._control) {
+      this._control = new L.control.controllableImageOverlay();
+      this._control.addTo(map);
+    }
 
 		map._panes.overlayPane.appendChild(this._image);
 
@@ -241,7 +241,7 @@ L.ImageOverlay = L.Class.extend({
 	},
 
 	_initImage: function () {
-		this._image = L.DomUtil.create('img', 'leaflet-image-layer');
+		this._image = L.DomUtil.create('img', 'leaflet-controllable-image-layer');
 
 		if (this._map.options.zoomAnimation && L.Browser.any3d) {
 			L.DomUtil.addClass(this._image, 'leaflet-zoom-animated');
@@ -278,6 +278,8 @@ L.ImageOverlay = L.Class.extend({
 	},
 
 	_reset: function () {
+    if (!this._imageLoaded) return;
+
 		var image   = this._image,
 		    topLeft = this._map.latLngToLayerPoint(this._bounds.getNorthWest()),
 		    size = this._map.latLngToLayerPoint(this._bounds.getSouthEast())._subtract(topLeft);
@@ -293,14 +295,51 @@ L.ImageOverlay = L.Class.extend({
 	},
 
 	_onImageLoad: function () {
+    var self = this,
+        map = this._map;
 		this.fire('load');
+    this._getImageInfo(this._url, function (info) {
+      self._imageLoaded = true;
+
+      var bounds = map.getBounds();
+      var ne = map.latLngToLayerPoint(bounds.getNorthEast());
+      var sw = map.latLngToLayerPoint(bounds.getSouthWest());
+      var width = ne.x - sw.x;
+      var height = sw.y - ne.y;
+      var centerX = width / 2;
+      var centerY = height / 2;
+
+      if (info.width > info.height) {
+        var displayHeight = centerX / info.width * info.height;
+        var tr = map.layerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2)),
+            bl = map.layerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2));
+      } else {
+        var displayWidth = centerY / info.height * info.width / 2;
+        var tr = map.layerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height)),
+            bl = map.layerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height));
+      }
+
+      self._bounds = L.latLngBounds([bl, tr]);
+      self._reset();
+    });
 	},
+
+  _getImageInfo: function (imgUrl, callback) {
+    var img = new Image();
+    img.src = imgUrl;
+    img.onload = function () {
+      callback({
+        width: img.width,
+        height: img.height
+      });
+    }
+  },
 
 	_updateOpacity: function () {
 		L.DomUtil.setOpacity(this._image, this.options.opacity);
 	}
 });
 
-L.imageOverlay = function (url, bounds, options) {
-	return new L.ImageOverlay(url, bounds, options);
+L.controllableImageOverlay = function (url, bounds, options) {
+	return new L.ControllableImageOverlay(url, bounds, options);
 };

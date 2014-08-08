@@ -12,35 +12,5 @@ var map = L.map('map', {
   attributionControl: false
 });
 
-var bounds = map.getBounds();
-var ne = map.latLngToLayerPoint(bounds.getNorthEast());
-var sw = map.latLngToLayerPoint(bounds.getSouthWest());
-var width = ne.x - sw.x;
-var height = sw.y - ne.y;
-
-var tr = map.layerPointToLatLng(L.point(3 / 4 * width, 1 / 4 * height)),
-    bl = map.layerPointToLatLng(L.point(1 / 4 * width, 3 / 4 * height));
-
-
-function getImageInfo (imgUrl, callback) {
-  var img = new Image();
-  img.src = imgUrl;
-  img.onload = function () {
-    callback({
-      width: img.width,
-      height: img.height
-    });
-  }
-}
-
-
-var imageUrl = 'http://www.lib.utexas.edu/maps/historical/newark_nj_1922.jpg',
-    imageBounds = [bl, tr];
-
-getImageInfo(imageUrl, function (info) {
-});
-
-L.imageOverlay(imageUrl, imageBounds).addTo(map);
-
-var imageControl = new L.control.image();
-imageControl.addTo(map);
+var imageUrl = './images/logo.png';
+L.controllableImageOverlay(imageUrl).addTo(map);
