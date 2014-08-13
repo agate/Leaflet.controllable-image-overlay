@@ -33,8 +33,8 @@ module.exports = (grunt) ->
             'dist/leaflet.controllable-image-overlay.css'
           ]
 
-    symlink:
-      explicit:
+    copy:
+      images:
         files: [
           {
             src: 'resources/sprites.enable.png'
@@ -51,7 +51,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-sass'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-cssmin'
-  grunt.loadNpmTasks 'grunt-contrib-symlink'
+  grunt.loadNpmTasks 'grunt-contrib-copy'
 
   grunt.registerTask 'default', [
     'clean'
@@ -59,5 +59,5 @@ module.exports = (grunt) ->
     'sass'
     'uglify'
     'cssmin'
-    'symlink'
+    'copy'
   ]
