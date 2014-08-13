@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# please link this file to .git/hooks/pre-commit
+
+exec grunt
