@@ -2,8 +2,7 @@
 
 ## Demo
 
-* clone this repo and open $REPO/demo/index.html
-* [http://jsfiddle.net/agate/kLwb7Lw5/](http://jsfiddle.net/agate/kLwb7Lw5/)
+Click [here](https://rawgit.com/agate/Leaflet.controllable-image-overlay/master/demo/index.html)
 
 ## How to build
 
