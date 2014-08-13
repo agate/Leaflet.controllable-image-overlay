@@ -25,6 +25,9 @@ L.ControllableImageOverlay = L.Class.extend({
 	},
 
   _eventImageChanged: function () {
+    this.options.imageRotate = 0;
+    this.options.imageOpacity = 1;
+    this.options.imageScale = 1;
     this.options.image = this._control.options.image;
     this._initImage();
   },
@@ -317,8 +320,8 @@ L.ControllableImageOverlay = L.Class.extend({
       self._imageLoaded = true;
 
       var bounds = map.getBounds();
-      var ne = map.latLngToLayerPoint(bounds.getNorthEast());
-      var sw = map.latLngToLayerPoint(bounds.getSouthWest());
+      var ne = map.latLngToContainerPoint(bounds.getNorthEast());
+      var sw = map.latLngToContainerPoint(bounds.getSouthWest());
       var width = ne.x - sw.x;
       var height = sw.y - ne.y;
       var centerX = width / 2;
@@ -326,12 +329,12 @@ L.ControllableImageOverlay = L.Class.extend({
 
       if (info.width > info.height) {
         var displayHeight = centerX / info.width * info.height;
-        var tr = map.layerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2)),
-            bl = map.layerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2));
+        var tr = map.containerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2)),
+            bl = map.containerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2));
       } else {
         var displayWidth = centerY / info.height * info.width / 2;
-        var tr = map.layerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height)),
-            bl = map.layerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height));
+        var tr = map.containerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height)),
+            bl = map.containerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height));
       }
 
       self._bounds = L.latLngBounds([bl, tr]);

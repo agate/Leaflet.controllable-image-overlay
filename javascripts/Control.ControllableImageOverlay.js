@@ -18,19 +18,19 @@ L.Control.ControllableImageOverlay = L.Control.extend({
 		this._map = map;
 
 		this._imageButton  = this._createButton(
-		        'C', 'Change Image Button',
+		        'C', 'Change image',
 		        className + '-image',  this._container, this._changeImage, this);
 		this._rotateButton  = this._createButton(
-		        'R', 'Enable Rotate Image Button',
+		        'R', 'Rotate image',
 		        className + '-rotate',  this._container, this._enableRotate, this);
 		this._scaleButton = this._createButton(
-		        'S', 'Enable Scale Image Button',
+		        'S', 'Resize image',
 		        className + '-scale',  this._container, this._enableScale, this);
 		this._moveButton = this._createButton(
-		        'M', 'Enable Move Image Button',
+		        'M', 'Move image',
 		        className + '-move',  this._container, this._enableMove, this);
 		this._transparentButton = this._createButton(
-		        'T', 'Enable Transparent Image Button',
+		        'T', 'Transparent image',
 		        className + '-transparent',  this._container, this._enableTransparent, this);
 
     this._imageForm = L.DomUtil.create('ul', className + '-actions', this._container);
