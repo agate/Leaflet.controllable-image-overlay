@@ -1,6 +1,22 @@
+VERSION = require('./package.json').version
+BANNAR = """
+Leaflet.controllable-image-overlay v#{VERSION}
+
+A plugin to Leaflet powered maps that allow you to put a image above map and
+allow you to rotate, resize, move and set transparent of this image.
+
+Copyright (c) 2014 agate.
+Licensed under the ISC license.
+
+https://github.com/agate/Leaflet.controllable-image-overlay
+
+Date: #{new Date().toUTCString()}
+"""
+
 module.exports = (grunt) ->
   grunt.initConfig
     clean:
+      tmp: 'tmp'
       dist: 'dist/*'
 
     coffee:
@@ -15,6 +31,8 @@ module.exports = (grunt) ->
       dist:
         options:
           style: 'expanded'
+          banner: "/*\n#{BANNAR}\n*/\n"
+
         files:
           'dist/leaflet.controllable-image-overlay.css':
             'src/style.sass'
