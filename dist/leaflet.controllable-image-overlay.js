@@ -1,5 +1,5 @@
 /*
- * Leaflet.controllable-image-overlay v0.1.0
+ * Leaflet.controllable-image-overlay v0.2.0
  * 
  * A plugin to Leaflet powered maps that:
  * 1. allow you to put an image above the map.
@@ -10,7 +10,7 @@
  * 
  * https://github.com/agate/Leaflet.controllable-image-overlay
  * 
- * Date: Wed, 13 Aug 2014 14:50:10 GMT
+ * Date: Wed, 13 Aug 2014 14:52:26 GMT
  */
 
 (function() {
