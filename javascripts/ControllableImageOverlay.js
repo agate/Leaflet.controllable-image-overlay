@@ -9,23 +9,28 @@ L.ControllableImageOverlay = L.Class.extend({
     imageScale: 1,
 	},
 
-	initialize: function (url, bounds, options) { // (String, LatLngBounds, Object)
-		this._url = url;
-
+	initialize: function (options) {
 		L.setOptions(this, options);
 	},
 
 	onAdd: function (map) {
 		this._map = map;
 
-		if (!this._image) {
-			this._initImage();
-		}
-
     if (!this._control) {
       this._control = new L.control.controllableImageOverlay();
       this._control.addTo(map);
     }
+
+    map.on('image:changed', this._eventImageChanged, this);
+	},
+
+  _eventImageChanged: function () {
+    this.options.image = this._control.options.image;
+    this._initImage();
+  },
+
+  _onImageAdded: function () {
+    var map = this._map;
 
 		map._panes.overlayPane.appendChild(this._image);
 
@@ -82,7 +87,7 @@ L.ControllableImageOverlay = L.Class.extend({
     }, this);
 
 		this._reset();
-	},
+  },
 
   // ROTATE STUFF
   _rotateStart: function (e) {
@@ -232,8 +237,8 @@ L.ControllableImageOverlay = L.Class.extend({
 	},
 
 	setUrl: function (url) {
-		this._url = url;
-		this._image.src = this._url;
+    this.options.image = url
+		this._image.src = url;
 	},
 
 	getAttribution: function () {
@@ -241,24 +246,33 @@ L.ControllableImageOverlay = L.Class.extend({
 	},
 
 	_initImage: function () {
-		this._image = L.DomUtil.create('img', 'leaflet-controllable-image-layer');
+    if (!this.options.image) return;
 
-		if (this._map.options.zoomAnimation && L.Browser.any3d) {
-			L.DomUtil.addClass(this._image, 'leaflet-zoom-animated');
-		} else {
-			L.DomUtil.addClass(this._image, 'leaflet-zoom-hide');
-		}
+    if (!this._image) {
+      this._image = L.DomUtil.create('img', 'leaflet-controllable-image-layer');
 
-		this._updateOpacity();
+      if (this._map.options.zoomAnimation && L.Browser.any3d) {
+        L.DomUtil.addClass(this._image, 'leaflet-zoom-animated');
+      } else {
+        L.DomUtil.addClass(this._image, 'leaflet-zoom-hide');
+      }
 
-		//TODO createImage util method to remove duplication
-		L.extend(this._image, {
-			galleryimg: 'no',
-			onselectstart: L.Util.falseFn,
-			onmousemove: L.Util.falseFn,
-			onload: L.bind(this._onImageLoad, this),
-			src: this._url
-		});
+      this._updateOpacity();
+
+      //TODO createImage util method to remove duplication
+      L.extend(this._image, {
+        galleryimg: 'no',
+        onselectstart: L.Util.falseFn,
+        onmousemove: L.Util.falseFn,
+        onload: L.bind(this._onImageLoad, this),
+        src: this.options.image
+      });
+
+      this._onImageAdded()
+
+    } else {
+      this._image.src = this.options.image;
+    }
 	},
 
 	_animateZoom: function (e) {
@@ -297,8 +311,9 @@ L.ControllableImageOverlay = L.Class.extend({
 	_onImageLoad: function () {
     var self = this,
         map = this._map;
+
 		this.fire('load');
-    this._getImageInfo(this._url, function (info) {
+    this._getImageInfo(this.options.image, function (info) {
       self._imageLoaded = true;
 
       var bounds = map.getBounds();

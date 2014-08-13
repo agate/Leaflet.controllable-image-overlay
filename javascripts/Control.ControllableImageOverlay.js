@@ -2,37 +2,81 @@ L.Control.ControllableImageOverlay = L.Control.extend({
 	options: {
 		position: 'topleft',
     modes: [
+      'image',
       'rotate',
       'scale',
       'move',
       'transparent'
-    ]
+    ],
 	},
 
 	onAdd: function (map) {
-		var className = 'leaflet-controllable-image-overlay',
-		    container = L.DomUtil.create('div', className + ' leaflet-bar');
+		var className = 'leaflet-controllable-image-overlay';
+		
+    this._container = L.DomUtil.create('div', className + ' leaflet-bar');
 
 		this._map = map;
 
+		this._imageButton  = this._createButton(
+		        'C', 'Change Image Button',
+		        className + '-image',  this._container, this._changeImage, this);
 		this._rotateButton  = this._createButton(
 		        'R', 'Enable Rotate Image Button',
-		        className + '-rotate',  container, this._enableRotate, this);
+		        className + '-rotate',  this._container, this._enableRotate, this);
 		this._scaleButton = this._createButton(
 		        'S', 'Enable Scale Image Button',
-		        className + '-scale',  container, this._enableScale, this);
+		        className + '-scale',  this._container, this._enableScale, this);
 		this._moveButton = this._createButton(
 		        'M', 'Enable Move Image Button',
-		        className + '-move',  container, this._enableMove, this);
+		        className + '-move',  this._container, this._enableMove, this);
 		this._transparentButton = this._createButton(
 		        'T', 'Enable Transparent Image Button',
-		        className + '-transparent',  container, this._enableTransparent, this);
+		        className + '-transparent',  this._container, this._enableTransparent, this);
 
-		return container;
+    this._imageForm = L.DomUtil.create('ul', className + '-actions', this._container);
+		var item = L.DomUtil.create('li', '', this._imageForm);
+    this._imageUrl = L.DomUtil.create('input', '', item);
+    this._imageUrl.placeholder = 'Fill your image url in here'
+    this._initElementEvents(this._imageUrl);
+
+    L.DomUtil.addClass(this._rotateButton, 'leaflet-disabled');
+    L.DomUtil.addClass(this._scaleButton, 'leaflet-disabled');
+    L.DomUtil.addClass(this._moveButton, 'leaflet-disabled');
+    L.DomUtil.addClass(this._transparentButton, 'leaflet-disabled');
+
+		return this._container;
 	},
 
 	onRemove: function (map) {
 	},
+
+  onImageChanged: function() {
+    L.DomUtil.removeClass(this._rotateButton, 'leaflet-disabled');
+    L.DomUtil.removeClass(this._scaleButton, 'leaflet-disabled');
+    L.DomUtil.removeClass(this._moveButton, 'leaflet-disabled');
+    L.DomUtil.removeClass(this._transparentButton, 'leaflet-disabled');
+  },
+
+	_changeImage: function (e) {
+    if (this._isDisabled(this._imageButton)) return;
+
+    if (this._changeImageEnabled) {
+      this._changeImageEnabled = false;
+      L.DomUtil.removeClass(this._container, 'actions-shown');
+
+      var image = this._imageUrl.value.trim();
+      if (image.length > 0 && image != this.options.image) {
+        this.options.image = image;
+        this._map.fire('image:changed');
+      }
+
+      if (this.options.image) this._exitMode('image');
+    } else {
+      this._changeImageEnabled = true;
+      this._enterMode('image');
+      L.DomUtil.addClass(this._container, 'actions-shown');
+    }
+  },
 
 	_enableRotate: function (e) {
     if (this._isDisabled(this._rotateButton)) return;
@@ -96,33 +140,21 @@ L.Control.ControllableImageOverlay = L.Control.extend({
 		link.href = '#';
 		link.title = title;
 
-		var stop = L.DomEvent.stopPropagation;
+    this._initElementEvents(link);
 
 		L.DomEvent
-		    .on(link, 'click', stop)
-		    .on(link, 'mousedown', stop)
-		    .on(link, 'dblclick', stop)
-		    .on(link, 'click', L.DomEvent.preventDefault)
 		    .on(link, 'click', fn, context)
 		    .on(link, 'click', this._refocusOnMap, context);
 
 		return link;
 	},
 
-  _addClass: function (ele, className) {
-    var classNames = this._getClassNames(ele);
-    classNames.push(className);
-    ele.className = classNames.join(' ');
-  },
-  _removeClass: function (ele, className) {
-    ele.className = this._getClassNames(ele).filter(function (c) {
-      return c != className;
-    }).join(' ');
-  },
-  _getClassNames: function (ele) {
-    return ele.className.split(/\s+/).filter(function (c) {
-      return c.length > 0;
-    });
+  _initElementEvents: function (ele) {
+		L.DomEvent
+		    .on(ele, 'click', L.DomEvent.stopPropagation)
+		    .on(ele, 'mousedown', L.DomEvent.stopPropagation)
+		    .on(ele, 'dblclick', L.DomEvent.stopPropagation)
+		    .on(ele, 'click', L.DomEvent.preventDefault);
   },
 
   _enterMode: function (mode) {
@@ -130,16 +162,16 @@ L.Control.ControllableImageOverlay = L.Control.extend({
       var button = this['_' + m + 'Button'];
 
       if (mode == m) {
-        this._removeClass(button, 'leaflet-disabled');
+        L.DomUtil.removeClass(button, 'leaflet-disabled');
       } else {
-        this._addClass(button, 'leaflet-disabled');
+        L.DomUtil.addClass(button, 'leaflet-disabled');
       }
     }, this);
   },
   _exitMode: function (mode) {
     this.options.modes.forEach(function (m) {
       var button = this['_' + m + 'Button'];
-      this._removeClass(button, 'leaflet-disabled');
+      L.DomUtil.removeClass(button, 'leaflet-disabled');
     }, this);
   },
   _isDisabled: function (ele) {
@@ -149,13 +181,13 @@ L.Control.ControllableImageOverlay = L.Control.extend({
   disable: function () {
     this.options.modes.forEach(function (m) {
       var button = this['_' + m + 'Button'];
-      this._addClass(button, 'leaflet-disabled');
+      L.DomUtil.addClass(button, 'leaflet-disabled');
     });
   },
   enable: function () {
     this.options.modes.forEach(function (m) {
       var button = this['_' + m + 'Button'];
-      this._removeClass(button, 'leaflet-disabled');
+      L.DomUtil.removeClass(button, 'leaflet-disabled');
     });
   }
 });
