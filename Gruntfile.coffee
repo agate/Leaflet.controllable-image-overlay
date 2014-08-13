@@ -1,9 +1,10 @@
 VERSION = require('./package.json').version
-BANNAR = """
+BANNER = """
 Leaflet.controllable-image-overlay v#{VERSION}
 
-A plugin to Leaflet powered maps that allow you to put a image above map and
-allow you to rotate, resize, move and set transparent of this image.
+A plugin to Leaflet powered maps that:
+1. allow you to put an image above the map.
+2. allow you to rotate, resize, move and set opacity of this image.
 
 Copyright (c) 2014 agate.
 Licensed under the ISC license.
@@ -16,7 +17,6 @@ Date: #{new Date().toUTCString()}
 module.exports = (grunt) ->
   grunt.initConfig
     clean:
-      tmp: 'tmp'
       dist: 'dist/*'
 
     coffee:
@@ -31,8 +31,6 @@ module.exports = (grunt) ->
       dist:
         options:
           style: 'expanded'
-          banner: "/*\n#{BANNAR}\n*/\n"
-
         files:
           'dist/leaflet.controllable-image-overlay.css':
             'src/style.sass'
@@ -49,6 +47,18 @@ module.exports = (grunt) ->
         files:
           'dist/leaflet.controllable-image-overlay.min.css': [
             'dist/leaflet.controllable-image-overlay.css'
+          ]
+
+    usebanner:
+      all:
+        options:
+          banner: "/*\n#{BANNER.split(/\n/).map((line) -> " * #{line}").join("\n")}\n */\n"
+        files:
+          src: [
+            'dist/leaflet.controllable-image-overlay.js'
+            'dist/leaflet.controllable-image-overlay.min.js'
+            'dist/leaflet.controllable-image-overlay.css'
+            'dist/leaflet.controllable-image-overlay.min.css'
           ]
 
     copy:
@@ -70,6 +80,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-cssmin'
   grunt.loadNpmTasks 'grunt-contrib-copy'
+  grunt.loadNpmTasks 'grunt-banner'
 
   grunt.registerTask 'default', [
     'clean'
@@ -77,5 +88,6 @@ module.exports = (grunt) ->
     'sass'
     'uglify'
     'cssmin'
+    'usebanner'
     'copy'
   ]

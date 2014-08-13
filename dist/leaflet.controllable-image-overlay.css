@@ -1,16 +1,17 @@
 /*
-Leaflet.controllable-image-overlay v0.1.0
-
-A plugin to Leaflet powered maps that allow you to put a image above map and
-allow you to rotate, resize, move and set transparent of this image.
-
-Copyright (c) 2014 agate.
-Licensed under the ISC license.
-
-https://github.com/agate/Leaflet.controllable-image-overlay
-
-Date: Wed, 13 Aug 2014 13:49:31 GMT
-*/
+ * Leaflet.controllable-image-overlay v0.1.0
+ * 
+ * A plugin to Leaflet powered maps that:
+ * 1. allow you to put an image above the map.
+ * 2. allow you to rotate, resize, move and set opacity of this image.
+ * 
+ * Copyright (c) 2014 agate.
+ * Licensed under the ISC license.
+ * 
+ * https://github.com/agate/Leaflet.controllable-image-overlay
+ * 
+ * Date: Wed, 13 Aug 2014 14:50:10 GMT
+ */
 
 .leaflet-controllable-image-overlay > a {
   background-image: url("./leaflet.controllable-image-overlay.enable.png");
