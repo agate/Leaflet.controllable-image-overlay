@@ -2,7 +2,7 @@
 
 ## Demo
 
-Click [here](http://cdn.rawgit.com/agate/Leaflet.controllable-image-overlay/master/demo/index.html)
+Click [here](http://rawgit.com/agate/Leaflet.controllable-image-overlay/master/demo/index.html)
 
 ## How to build
 
