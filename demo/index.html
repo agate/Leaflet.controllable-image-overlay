@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Leaflet Controllable Image Overlay Demo</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <link rel="stylesheet" href="../dist/leaflet.controllable-image-overlay.min.css" />
+    <style type="text/css" media="screen">
+      body {
+        padding: 0;
+        margin: 0;
+      }
+
+      #map {
+        width: 800px;
+        height: 600px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script src="../dist/leaflet.controllable-image-overlay.js"></script>
+    <script type="text/javascript" charset="utf-8">
+      var mapboxId = 'examples.map-i86knfo3';
+      var mapboxUrl = 'http://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
+      var mapboxLayer = L.tileLayer(mapboxUrl, {
+        id: mapboxId,
+        maxZoom: 18
+      });
+
+      var map = L.map('map', {
+        center: [31.2394791, 121.5002838], // Shanghai Oriental Pearl TV Tower
+        zoom: 13,
+        layers: [ mapboxLayer ],
+        attributionControl: false
+      });
+
+      L.controllableImageOverlay().addTo(map);
+    </script>
+  </body>
+</html>
