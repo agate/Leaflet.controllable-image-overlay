@@ -1,4 +1,28 @@
-.leaflet-controllable-image-overlay.actions-shown a:first-child {
+.leaflet-controllable-image-overlay > a {
+  background-image: url("./leaflet.controllable-image-overlay.enable.png");
+  background-repeat: no-repeat;
+  text-indent: 100%;
+  overflow: hidden;
+}
+.leaflet-controllable-image-overlay > a.leaflet-disabled {
+  background-image: url("./leaflet.controllable-image-overlay.disable.png");
+}
+.leaflet-controllable-image-overlay > a.leaflet-controllable-image-overlay-image {
+  background-position: -27px 5px;
+}
+.leaflet-controllable-image-overlay > a.leaflet-controllable-image-overlay-rotate {
+  background-position: -91px 5px;
+}
+.leaflet-controllable-image-overlay > a.leaflet-controllable-image-overlay-scale {
+  background-position: -123px 5px;
+}
+.leaflet-controllable-image-overlay > a.leaflet-controllable-image-overlay-move {
+  background-position: 5px 5px;
+}
+.leaflet-controllable-image-overlay > a.leaflet-controllable-image-overlay-transparent {
+  background-position: -59px 5px;
+}
+.leaflet-controllable-image-overlay.actions-shown > a:first-child {
   border-top-right-radius: 0;
 }
 .leaflet-controllable-image-overlay.actions-shown .leaflet-controllable-image-overlay-actions {

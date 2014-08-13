@@ -1,10 +1,7 @@
 module.exports = (grunt) ->
   grunt.initConfig
     clean:
-      dist: [
-        'dist/leaflet.controllable-image-overlay.js'
-        'dist/leaflet.controllable-image-overlay.min.js'
-      ]
+      dist: 'dist/*'
 
     coffee:
       compile:
@@ -36,11 +33,25 @@ module.exports = (grunt) ->
             'dist/leaflet.controllable-image-overlay.css'
           ]
 
+    symlink:
+      explicit:
+        files: [
+          {
+            src: 'resources/sprites.enable.png'
+            dest: 'dist/leaflet.controllable-image-overlay.enable.png'
+          }
+          {
+            src: 'resources/sprites.disable.png'
+            dest: 'dist/leaflet.controllable-image-overlay.disable.png'
+          }
+        ]
+
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-sass'
   grunt.loadNpmTasks 'grunt-contrib-uglify'
   grunt.loadNpmTasks 'grunt-contrib-cssmin'
+  grunt.loadNpmTasks 'grunt-contrib-symlink'
 
   grunt.registerTask 'default', [
     'clean'
@@ -48,4 +59,5 @@ module.exports = (grunt) ->
     'sass'
     'uglify'
     'cssmin'
+    'symlink'
   ]
