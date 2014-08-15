@@ -9,8 +9,6 @@
  * Licensed under the ISC license.
  * 
  * https://github.com/agate/Leaflet.controllable-image-overlay
- * 
- * Date: Fri, 15 Aug 2014 03:24:20 GMT
  */
 
 (function() {

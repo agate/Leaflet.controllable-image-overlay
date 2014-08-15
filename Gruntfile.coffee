@@ -10,8 +10,6 @@ Copyright (c) 2014 agate.
 Licensed under the ISC license.
 
 https://github.com/agate/Leaflet.controllable-image-overlay
-
-Date: #{new Date().toUTCString()}
 """
 
 module.exports = (grunt) ->
