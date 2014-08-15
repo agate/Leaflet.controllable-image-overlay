@@ -37,7 +37,9 @@
         attributionControl: false
       });
 
-      L.controllableImageOverlay().addTo(map);
+      L.control.controllableImageOverlay({
+        position: 'topright'
+      }).addTo(map);
     </script>
   </body>
 </html>

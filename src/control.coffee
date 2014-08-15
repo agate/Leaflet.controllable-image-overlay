@@ -9,6 +9,10 @@ L.Control.ControllableImageOverlay = L.Control.extend
       'transparent'
     ]
 
+  initialize: (options) ->
+    L.Control.prototype.initialize.call(@, options)
+    @_overlay = L.controllableImageOverlay(@)
+
   onAdd: (map) ->
     className = 'leaflet-controllable-image-overlay'
 
@@ -33,6 +37,7 @@ L.Control.ControllableImageOverlay = L.Control.extend
     L.DomUtil.addClass(@_moveButton, 'leaflet-disabled')
     L.DomUtil.addClass(@_transparentButton, 'leaflet-disabled')
 
+    @_overlay.addTo(map)
     @_container
 
   onRemove: (map) ->

@@ -10,7 +10,7 @@
  * 
  * https://github.com/agate/Leaflet.controllable-image-overlay
  * 
- * Date: Wed, 13 Aug 2014 14:52:26 GMT
+ * Date: Fri, 15 Aug 2014 02:57:47 GMT
  */
 
 (function() {
@@ -18,6 +18,10 @@
     options: {
       position: 'topleft',
       modes: ['image', 'rotate', 'scale', 'move', 'transparent']
+    },
+    initialize: function(options) {
+      L.Control.prototype.initialize.call(this, options);
+      return this._overlay = L.controllableImageOverlay(this);
     },
     onAdd: function(map) {
       var className, item;
@@ -38,6 +42,7 @@
       L.DomUtil.addClass(this._scaleButton, 'leaflet-disabled');
       L.DomUtil.addClass(this._moveButton, 'leaflet-disabled');
       L.DomUtil.addClass(this._transparentButton, 'leaflet-disabled');
+      this._overlay.addTo(map);
       return this._container;
     },
     onRemove: function(map) {},
@@ -190,15 +195,11 @@
       imageOpacity: 1,
       imageScale: 1
     },
-    initialize: function(options) {
-      return L.setOptions(this, options);
+    initialize: function(control) {
+      return this._control = control;
     },
     onAdd: function(map) {
       this._map = map;
-      if (!this._control) {
-        this._control = new L.control.controllableImageOverlay();
-        this._control.addTo(map);
-      }
       return map.on('image:changed', this._eventImageChanged, this);
     },
     _eventImageChanged: function() {

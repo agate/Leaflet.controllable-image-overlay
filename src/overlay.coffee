@@ -8,15 +8,11 @@ L.ControllableImageOverlay = L.Class.extend
     imageOpacity: 1
     imageScale: 1
 
-  initialize: (options) ->
-    L.setOptions(@, options)
+  initialize: (control) ->
+    @_control = control
 
   onAdd: (map) ->
     @_map = map
-
-    if !@_control
-      @_control = new L.control.controllableImageOverlay()
-      @_control.addTo(map)
 
     map.on('image:changed', @_eventImageChanged, @)
 
