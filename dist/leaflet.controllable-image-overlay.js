@@ -198,6 +198,8 @@
 }).call(this);
 
 (function() {
+  var __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+
   L.ControllableImageOverlay = L.Class.extend({
     includes: L.Mixin.Events,
     options: {
@@ -206,11 +208,23 @@
       imageScale: 1
     },
     initialize: function(control) {
-      return this._control = control;
+      this._control = control;
+      return this._wheelEventName = this._getWheelEventName();
     },
     onAdd: function(map) {
       this._map = map;
       return map.on('image:changed', this._resetImage, this);
+    },
+    _getWheelEventName: function() {
+      if (__indexOf.call(document.createElement("div"), "onwheel") >= 0) {
+        return "wheel";
+      } else {
+        if (document.onmousewheel !== void 0) {
+          return "mousewheel";
+        } else {
+          return "DOMMouseScroll";
+        }
+      }
     },
     _onImageAdded: function() {
       this._map.getPanes().overlayPane.appendChild(this._image);
@@ -255,10 +269,10 @@
         return L.DomEvent.off(this._image, 'mouseup', this._moveEnd, this);
       }), this);
       this._map.on('image:transparent:enabled', (function() {
-        return L.DomEvent.on(this._image, 'mousewheel', this._transparent, this);
+        return L.DomEvent.on(this._image, this._wheelEventName, this._transparent, this);
       }), this);
       this._map.on('image:transparent:disabled', (function() {
-        return L.DomEvent.off(this._image, 'mousewheel', this._transparent, this);
+        return L.DomEvent.off(this._image, this._wheelEventName, this._transparent, this);
       }), this);
       this._map.on('image:reset', (function() {
         return this._resetImage();
@@ -270,11 +284,13 @@
     },
     _rotateStart: function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       this._imageRotating = true;
       return this._imageRotateDiff = this._getMouseImageRotate(e) - this.options.imageRotate;
     },
     _rotateEnd: function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       return this._imageRotating = false;
     },
     _rotating: function(e) {
@@ -282,6 +298,7 @@
         return;
       }
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       this.options.imageRotate = this._getMouseImageRotate(e) - this._imageRotateDiff;
       return this._reset();
     },
@@ -296,6 +313,7 @@
     },
     _scaleStart: function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       this._imageScaling = true;
       this._imageScalingInitScale = this.options.imageScale;
       return this._imageScalingInitPoint = {
@@ -305,6 +323,7 @@
     },
     _scaleEnd: function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       return this._imageScaling = false;
     },
     _scaling: function(e) {
@@ -313,6 +332,7 @@
         return;
       }
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       imageBounding = this._image.getBoundingClientRect();
       centerX = imageBounding.left + imageBounding.width / 2;
       centerY = imageBounding.top + imageBounding.height / 2;
@@ -328,30 +348,40 @@
     },
     _moveStart: function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
+      this._imageMovingEvent = e;
       return this._imageMoving = true;
     },
     _moveEnd: function(e) {
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       return this._imageMoving = false;
     },
     _moving: function(e) {
-      var ne, sw;
+      var movementX, movementY, ne, sw;
       if (!this._imageMoving) {
         return;
       }
       L.DomEvent.stopPropagation(e);
+      L.DomEvent.preventDefault(e);
       ne = this._map.latLngToLayerPoint(this._bounds.getNorthEast());
       sw = this._map.latLngToLayerPoint(this._bounds.getSouthWest());
-      ne.x += e.movementX;
-      ne.y += e.movementY;
-      sw.x += e.movementX;
-      sw.y += e.movementY;
+      movementX = e.screenX - this._imageMovingEvent.screenX;
+      movementY = e.screenY - this._imageMovingEvent.screenY;
+      ne.x += movementX;
+      ne.y += movementY;
+      sw.x += movementX;
+      sw.y += movementY;
       this._bounds = L.latLngBounds(this._map.layerPointToLatLng(sw), this._map.layerPointToLatLng(ne));
+      this._imageMovingEvent = e;
       return this._reset();
     },
     _transparent: function(e) {
+      var wheelDelta;
       L.DomEvent.stopPropagation(e);
-      this.options.imageOpacity = this.options.imageOpacity + e.wheelDelta / 120 / 50;
+      L.DomEvent.preventDefault(e);
+      wheelDelta = this._wheelEventName === 'mousewheel' ? e.wheelDelta / 120 : -e.detail;
+      this.options.imageOpacity = this.options.imageOpacity + wheelDelta / 50;
       if (this.options.imageOpacity > 1) {
         this.options.imageOpacity = 1;
       }

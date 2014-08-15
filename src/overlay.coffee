@@ -8,10 +8,23 @@ L.ControllableImageOverlay = L.Class.extend
 
   initialize: (control) ->
     @_control = control
+    @_wheelEventName = @_getWheelEventName()
 
   onAdd: (map) ->
     @_map = map
     map.on('image:changed', @_resetImage, @)
+
+  _getWheelEventName: ->
+    if "onwheel" in document.createElement("div")
+      # Modern browsers support "wheel"
+      "wheel"
+    else
+      if document.onmousewheel != undefined
+        # Webkit and IE support at least "mousewheel"
+        "mousewheel"
+      else
+        # let's assume that remaining browsers are older Firefox
+        "DOMMouseScroll" 
 
   _onImageAdded: ->
     @_map.getPanes().overlayPane.appendChild(@_image)
@@ -57,10 +70,10 @@ L.ControllableImageOverlay = L.Class.extend
       L.DomEvent.off(@_image, 'mouseup', @_moveEnd, @)
     ), @)
     @_map.on('image:transparent:enabled', (->
-      L.DomEvent.on(@_image, 'mousewheel', @_transparent, @)
+      L.DomEvent.on(@_image, @_wheelEventName, @_transparent, @)
     ), @)
     @_map.on('image:transparent:disabled', (->
-      L.DomEvent.off(@_image, 'mousewheel', @_transparent, @)
+      L.DomEvent.off(@_image, @_wheelEventName, @_transparent, @)
     ), @)
     @_map.on('image:reset', (->
       @_resetImage()
@@ -74,11 +87,13 @@ L.ControllableImageOverlay = L.Class.extend
   # ROTATE STUFF
   _rotateStart: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     @_imageRotating = true
     @_imageRotateDiff = @_getMouseImageRotate(e) - @options.imageRotate
   _rotateEnd: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     @_imageRotating = false
   _rotating: (e) ->
@@ -86,6 +101,7 @@ L.ControllableImageOverlay = L.Class.extend
       return
 
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     @options.imageRotate = @_getMouseImageRotate(e) - @_imageRotateDiff
     @_reset()
@@ -101,6 +117,7 @@ L.ControllableImageOverlay = L.Class.extend
   # SCALE STUFF
   _scaleStart: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     @_imageScaling = true
     @_imageScalingInitScale = @options.imageScale
@@ -109,6 +126,7 @@ L.ControllableImageOverlay = L.Class.extend
       y: e.pageY,
   _scaleEnd: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     @_imageScaling = false
   _scaling: (e) ->
@@ -116,6 +134,7 @@ L.ControllableImageOverlay = L.Class.extend
       return
 
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     imageBounding = @_image.getBoundingClientRect()
     centerX = imageBounding.left + imageBounding.width / 2
@@ -134,10 +153,13 @@ L.ControllableImageOverlay = L.Class.extend
   # MOVE STUFF
   _moveStart: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
+    @_imageMovingEvent = e
     @_imageMoving = true
   _moveEnd: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     @_imageMoving = false
   _moving: (e) ->
@@ -145,27 +167,39 @@ L.ControllableImageOverlay = L.Class.extend
       return
 
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
     ne = @_map.latLngToLayerPoint(@_bounds.getNorthEast())
     sw = @_map.latLngToLayerPoint(@_bounds.getSouthWest())
 
-    ne.x += e.movementX
-    ne.y += e.movementY
-    sw.x += e.movementX
-    sw.y += e.movementY
+    movementX = e.screenX - @_imageMovingEvent.screenX
+    movementY = e.screenY - @_imageMovingEvent.screenY
+
+    ne.x += movementX
+    ne.y += movementY
+    sw.x += movementX
+    sw.y += movementY
 
     @_bounds = L.latLngBounds(
       @_map.layerPointToLatLng(sw),
       @_map.layerPointToLatLng(ne)
     )
 
+
+    @_imageMovingEvent = e
     @_reset()
 
   # TRANSPARENT STUFF
   _transparent: (e) ->
     L.DomEvent.stopPropagation(e)
+    L.DomEvent.preventDefault(e)
 
-    @options.imageOpacity = @options.imageOpacity + e.wheelDelta / 120 / 50
+    wheelDelta = if @_wheelEventName == 'mousewheel'
+      e.wheelDelta / 120
+    else
+      - e.detail
+
+    @options.imageOpacity = @options.imageOpacity + wheelDelta / 50
 
     if @options.imageOpacity > 1
       @options.imageOpacity = 1
