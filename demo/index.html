@@ -23,23 +23,25 @@
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
     <script src="../dist/leaflet.controllable-image-overlay.js"></script>
     <script type="text/javascript" charset="utf-8">
-      var mapboxId = 'examples.map-i86knfo3';
-      var mapboxUrl = 'http://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
-      var mapboxLayer = L.tileLayer(mapboxUrl, {
-        id: mapboxId,
-        maxZoom: 18
-      });
+      (function () {
+        var mapboxId = 'examples.map-i86knfo3';
+        var mapboxUrl = 'http://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png';
+        var mapboxLayer = L.tileLayer(mapboxUrl, {
+          id: mapboxId,
+          maxZoom: 18
+        });
 
-      var map = L.map('map', {
-        center: [31.2394791, 121.5002838], // Shanghai Oriental Pearl TV Tower
-        zoom: 13,
-        layers: [ mapboxLayer ],
-        attributionControl: false
-      });
+        var map = L.map('map', {
+          center: [31.2394791, 121.5002838], // Shanghai Oriental Pearl TV Tower
+          zoom: 13,
+          layers: [ mapboxLayer ],
+          attributionControl: false
+        });
 
-      L.control.controllableImageOverlay({
-        position: 'topright'
-      }).addTo(map);
+        L.control.controllableImageOverlay({
+          position: 'topright'
+        }).addTo(map);
+      }).call(this);
     </script>
   </body>
 </html>

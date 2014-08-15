@@ -153,8 +153,8 @@ L.ControllableImageOverlay = L.Class.extend
 
     L.DomEvent.stopPropagation(e)
 
-    ne = map.latLngToLayerPoint(@_bounds.getNorthEast())
-    sw = map.latLngToLayerPoint(@_bounds.getSouthWest())
+    ne = @_map.latLngToLayerPoint(@_bounds.getNorthEast())
+    sw = @_map.latLngToLayerPoint(@_bounds.getSouthWest())
 
     ne.x += e.movementX
     ne.y += e.movementY
@@ -162,8 +162,8 @@ L.ControllableImageOverlay = L.Class.extend
     sw.y += e.movementY
 
     @_bounds = L.latLngBounds(
-      map.layerPointToLatLng(sw),
-      map.layerPointToLatLng(ne)
+      @_map.layerPointToLatLng(sw),
+      @_map.layerPointToLatLng(ne)
     )
 
     @_reset()

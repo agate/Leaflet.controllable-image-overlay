@@ -10,7 +10,7 @@
  * 
  * https://github.com/agate/Leaflet.controllable-image-overlay
  * 
- * Date: Fri, 15 Aug 2014 02:57:47 GMT
+ * Date: Fri, 15 Aug 2014 03:24:20 GMT
  */
 
 (function() {
@@ -333,13 +333,13 @@
         return;
       }
       L.DomEvent.stopPropagation(e);
-      ne = map.latLngToLayerPoint(this._bounds.getNorthEast());
-      sw = map.latLngToLayerPoint(this._bounds.getSouthWest());
+      ne = this._map.latLngToLayerPoint(this._bounds.getNorthEast());
+      sw = this._map.latLngToLayerPoint(this._bounds.getSouthWest());
       ne.x += e.movementX;
       ne.y += e.movementY;
       sw.x += e.movementX;
       sw.y += e.movementY;
-      this._bounds = L.latLngBounds(map.layerPointToLatLng(sw), map.layerPointToLatLng(ne));
+      this._bounds = L.latLngBounds(this._map.layerPointToLatLng(sw), this._map.layerPointToLatLng(ne));
       return this._reset();
     },
     _transparent: function(e) {
