@@ -1,16 +1,3 @@
-/*
- * Leaflet.controllable-image-overlay v0.2.0
- * 
- * A plugin to Leaflet powered maps that:
- * 1. allow you to put an image above the map.
- * 2. allow you to rotate, resize, move and set opacity of this image.
- * 
- * Copyright (c) 2014 agate.
- * Licensed under the ISC license.
- * 
- * https://github.com/agate/Leaflet.controllable-image-overlay
- */
-
 (function() {
   L.Control.ControllableImageOverlay = L.Control.extend({
     options: {
@@ -22,7 +9,7 @@
       return this._overlay = L.controllableImageOverlay(this);
     },
     onAdd: function(map) {
-      var className, item;
+      var className, removeItem, resetItem, urlItem;
       className = 'leaflet-controllable-image-overlay';
       this._container = L.DomUtil.create('div', className + ' leaflet-bar');
       this._map = map;
@@ -32,10 +19,14 @@
       this._moveButton = this._createButton('M', 'Move image', className + '-move', this._container, this._enableMove, this);
       this._transparentButton = this._createButton('T', 'Transparent image', className + '-transparent', this._container, this._enableTransparent, this);
       this._imageForm = L.DomUtil.create('ul', className + '-actions', this._container);
-      item = L.DomUtil.create('li', '', this._imageForm);
-      this._imageUrl = L.DomUtil.create('input', '', item);
+      urlItem = L.DomUtil.create('li', '', this._imageForm);
+      resetItem = L.DomUtil.create('li', '', this._imageForm);
+      removeItem = L.DomUtil.create('li', '', this._imageForm);
+      this._imageUrl = L.DomUtil.create('input', '', urlItem);
       this._imageUrl.placeholder = 'Fill your image url in here';
       this._initElementEvents(this._imageUrl);
+      this._resetButton = this._createButton('Reset', 'Reset image', '', resetItem, this._resetImage, this);
+      this._removeButton = this._createButton('Remove', 'Remove image', '', removeItem, this._removeImage, this);
       L.DomUtil.addClass(this._rotateButton, 'leaflet-disabled');
       L.DomUtil.addClass(this._scaleButton, 'leaflet-disabled');
       L.DomUtil.addClass(this._moveButton, 'leaflet-disabled');
@@ -69,7 +60,12 @@
       } else {
         this._changeImageEnabled = true;
         this._enterMode('image');
-        return L.DomUtil.addClass(this._container, 'actions-shown');
+        L.DomUtil.addClass(this._container, 'actions-shown');
+        return setTimeout(((function(_this) {
+          return function() {
+            return _this._imageUrl.focus();
+          };
+        })(this)), 10);
       }
     },
     _enableRotate: function(e) {
@@ -127,6 +123,23 @@
         this._enterMode('transparent');
         return this._map.fire('image:transparent:enabled');
       }
+    },
+    _resetImage: function(e) {
+      this._changeImageEnabled = false;
+      this._imageUrl.value = this.options.image || '';
+      L.DomUtil.removeClass(this._container, 'actions-shown');
+      this._map.fire('image:reset');
+      if (this._overlay._image) {
+        return this._exitMode('image');
+      }
+    },
+    _removeImage: function(e) {
+      this._changeImageEnabled = false;
+      L.DomUtil.removeClass(this._container, 'actions-shown');
+      this._imageUrl.value = '';
+      this.options.image = '';
+      this._map.fire('image:remove');
+      return this._enterMode('image');
     },
     _createButton: function(html, title, className, container, fn, context) {
       var link;
@@ -188,7 +201,6 @@
   L.ControllableImageOverlay = L.Class.extend({
     includes: L.Mixin.Events,
     options: {
-      opacity: 1,
       imageRotate: 0,
       imageOpacity: 1,
       imageScale: 1
@@ -198,64 +210,61 @@
     },
     onAdd: function(map) {
       this._map = map;
-      return map.on('image:changed', this._eventImageChanged, this);
-    },
-    _eventImageChanged: function() {
-      this.options.imageRotate = 0;
-      this.options.imageOpacity = 1;
-      this.options.imageScale = 1;
-      this.options.image = this._control.options.image;
-      return this._initImage();
+      return map.on('image:changed', this._resetImage, this);
     },
     _onImageAdded: function() {
-      var map;
-      map = this._map;
-      map._panes.overlayPane.appendChild(this._image);
-      map.on('viewreset', this._reset, this);
-      if (map.options.zoomAnimation && L.Browser.any3d) {
-        map.on('zoomanim', this._animateZoom, this);
+      this._map.getPanes().overlayPane.appendChild(this._image);
+      this._map.on('viewreset', this._reset, this);
+      if (this._map.options.zoomAnimation && L.Browser.any3d) {
+        this._map.on('zoomanim', this._animateZoom, this);
       }
-      map.on('image:rotate:enabled', (function() {
+      this._map.on('image:rotate:enabled', (function() {
         L.DomEvent.on(this._image, 'mousedown', this._rotateStart, this);
         L.DomEvent.on(this._image, 'mousemove', this._rotating, this);
         L.DomEvent.on(this._image, 'mouseout', this._rotateEnd, this);
         return L.DomEvent.on(this._image, 'mouseup', this._rotateEnd, this);
       }), this);
-      map.on('image:rotate:disabled', (function() {
+      this._map.on('image:rotate:disabled', (function() {
         L.DomEvent.off(this._image, 'mousedown', this._rotateStart, this);
         L.DomEvent.off(this._image, 'mousemove', this._rotating, this);
         L.DomEvent.off(this._image, 'mouseout', this._rotateEnd, this);
         return L.DomEvent.off(this._image, 'mouseup', this._rotateEnd, this);
       }), this);
-      map.on('image:scale:enabled', (function() {
+      this._map.on('image:scale:enabled', (function() {
         L.DomEvent.on(this._image, 'mousedown', this._scaleStart, this);
         L.DomEvent.on(this._image, 'mousemove', this._scaling, this);
         L.DomEvent.on(this._image, 'mouseout', this._scaleEnd, this);
         return L.DomEvent.on(this._image, 'mouseup', this._scaleEnd, this);
       }), this);
-      map.on('image:scale:disabled', (function() {
+      this._map.on('image:scale:disabled', (function() {
         L.DomEvent.off(this._image, 'mousedown', this._scaleStart, this);
         L.DomEvent.off(this._image, 'mousemove', this._scaling, this);
         L.DomEvent.off(this._image, 'mouseout', this._scaleEnd, this);
         return L.DomEvent.off(this._image, 'mouseup', this._scaleEnd, this);
       }), this);
-      map.on('image:move:enabled', (function() {
+      this._map.on('image:move:enabled', (function() {
         L.DomEvent.on(this._image, 'mousedown', this._moveStart, this);
         L.DomEvent.on(this._image, 'mousemove', this._moving, this);
         L.DomEvent.on(this._image, 'mouseout', this._moveEnd, this);
         return L.DomEvent.on(this._image, 'mouseup', this._moveEnd, this);
       }), this);
-      map.on('image:move:disabled', (function() {
+      this._map.on('image:move:disabled', (function() {
         L.DomEvent.off(this._image, 'mousedown', this._moveStart, this);
         L.DomEvent.off(this._image, 'mousemove', this._moving, this);
         L.DomEvent.off(this._image, 'mouseout', this._moveEnd, this);
         return L.DomEvent.off(this._image, 'mouseup', this._moveEnd, this);
       }), this);
-      map.on('image:transparent:enabled', (function() {
+      this._map.on('image:transparent:enabled', (function() {
         return L.DomEvent.on(this._image, 'mousewheel', this._transparent, this);
       }), this);
-      map.on('image:transparent:disabled', (function() {
+      this._map.on('image:transparent:disabled', (function() {
         return L.DomEvent.off(this._image, 'mousewheel', this._transparent, this);
+      }), this);
+      this._map.on('image:reset', (function() {
+        return this._resetImage();
+      }), this);
+      this._map.on('image:remove', (function() {
+        return this._removeImage();
       }), this);
       return this._reset();
     },
@@ -352,19 +361,14 @@
       return this._reset();
     },
     onRemove: function(map) {
-      map.getPanes().overlayPane.removeChild(this._image);
-      map.off('viewreset', this._reset, this);
+      this._removeImage();
+      this._map.off('image:changed', this._resetImage, this);
       if (map.options.zoomAnimation) {
         return map.off('zoomanim', this._animateZoom, this);
       }
     },
     addTo: function(map) {
       map.addLayer(this);
-      return this;
-    },
-    setOpacity: function(opacity) {
-      this.options.opacity = opacity;
-      this._updateOpacity();
       return this;
     },
     bringToFront: function() {
@@ -382,14 +386,13 @@
       return this;
     },
     setUrl: function(url) {
-      this.options.image = url;
       return this._image.src = url;
     },
     getAttribution: function() {
       return this.options.attribution;
     },
     _initImage: function() {
-      if (!this.options.image) {
+      if (!this._control.options.image) {
         return;
       }
       if (!this._image) {
@@ -399,17 +402,15 @@
         } else {
           L.DomUtil.addClass(this._image, 'leaflet-zoom-hide');
         }
-        this._updateOpacity();
-        L.extend(this._image, {
+        return L.extend(this._image, {
           galleryimg: 'no',
           onselectstart: L.Util.falseFn,
           onmousemove: L.Util.falseFn,
           onload: L.bind(this._onImageLoad, this),
-          src: this.options.image
+          src: this._control.options.image
         });
-        return this._onImageAdded();
       } else {
-        return this._image.src = this.options.image;
+        return this._image.src = this._control.options.image;
       }
     },
     _animateZoom: function(e) {
@@ -423,6 +424,28 @@
       size = map._latLngToNewLayerPoint(se, e.zoom, e.center)._subtract(topLeft);
       origin = topLeft._add(size._multiplyBy((1 / 2) * (1 - 1 / scale)));
       return image.style[L.DomUtil.TRANSFORM] = L.DomUtil.getTranslateString(origin) + ' scale(' + scale * this.imageScale + ')' + ' rotate(' + this.options.imageRotate + ')';
+    },
+    _resetOptions: function() {
+      this.options.imageRotate = 0;
+      this.options.imageOpacity = 1;
+      return this.options.imageScale = 1;
+    },
+    _resetImage: function() {
+      this._resetOptions();
+      this._initImage();
+      return this._resetImageBounds((function(_this) {
+        return function() {
+          return _this._reset();
+        };
+      })(this));
+    },
+    _removeImage: function() {
+      this._resetOptions();
+      if (this._image) {
+        this._map.getPanes().overlayPane.removeChild(this._image);
+      }
+      this._map.off('viewreset', this._reset, this);
+      return this._image = null;
     },
     _reset: function() {
       var image, size, topLeft;
@@ -439,33 +462,39 @@
       image.style[L.DomUtil.TRANSFORM] += ' scale(' + this.options.imageScale + ')';
       return image.style[L.DomUtil.TRANSFORM] += ' rotate(' + this.options.imageRotate + 'deg)';
     },
+    _resetImageBounds: function(cb) {
+      return this._getImageInfo(this._control.options.image, (function(_this) {
+        return function(info) {
+          var bl, bounds, centerX, centerY, displayHeight, displayWidth, height, ne, sw, tr, width;
+          _this._imageLoaded = true;
+          bounds = _this._map.getBounds();
+          ne = _this._map.latLngToContainerPoint(bounds.getNorthEast());
+          sw = _this._map.latLngToContainerPoint(bounds.getSouthWest());
+          width = ne.x - sw.x;
+          height = sw.y - ne.y;
+          centerX = width / 2;
+          centerY = height / 2;
+          if (info.width > info.height) {
+            displayHeight = centerX / info.width * info.height;
+            tr = _this._map.containerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2));
+            bl = _this._map.containerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2));
+          } else {
+            displayWidth = centerY / info.height * info.width / 2;
+            tr = _this._map.containerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height));
+            bl = _this._map.containerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height));
+          }
+          _this._bounds = L.latLngBounds([bl, tr]);
+          return cb();
+        };
+      })(this));
+    },
     _onImageLoad: function() {
-      var map, self;
-      self = this;
-      map = this._map;
       this.fire('load');
-      return this._getImageInfo(this.options.image, function(info) {
-        var bl, bounds, centerX, centerY, displayHeight, displayWidth, height, ne, sw, tr, width;
-        self._imageLoaded = true;
-        bounds = map.getBounds();
-        ne = map.latLngToContainerPoint(bounds.getNorthEast());
-        sw = map.latLngToContainerPoint(bounds.getSouthWest());
-        width = ne.x - sw.x;
-        height = sw.y - ne.y;
-        centerX = width / 2;
-        centerY = height / 2;
-        if (info.width > info.height) {
-          displayHeight = centerX / info.width * info.height;
-          tr = map.containerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2));
-          bl = map.containerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2));
-        } else {
-          displayWidth = centerY / info.height * info.width / 2;
-          tr = map.containerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height));
-          bl = map.containerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height));
-        }
-        self._bounds = L.latLngBounds([bl, tr]);
-        return self._reset();
-      });
+      return this._resetImageBounds((function(_this) {
+        return function() {
+          return _this._onImageAdded();
+        };
+      })(this));
     },
     _getImageInfo: function(imgUrl, callback) {
       var img;
@@ -477,9 +506,6 @@
           height: img.height
         });
       };
-    },
-    _updateOpacity: function() {
-      return L.DomUtil.setOpacity(this._image, this.options.opacity);
     }
   });
 

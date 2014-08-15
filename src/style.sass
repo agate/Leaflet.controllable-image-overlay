@@ -39,12 +39,32 @@
     top: 0
     white-space: nowrap
 
-    input
-      border: 0
-      height: 24px
-      line-height: 24px
-      width: 150px
-      padding-left: 10px
+    li
+      display: inline-block
+
+      input, a
+        background-color: #919187
+        color: white
+
+      input
+        border: 0
+        height: 24px
+        line-height: 24px
+        width: 150px
+        padding-left: 5px
+        padding-right: 5px
+        text-align: center
+
+      a
+        border-left: 1px solid #AAA
+        border-radius: 0
+        width: inherit
+        padding-left: 10px
+        padding-right: 10px
+        font-size: 11px
+
+        &:hover
+          background-color: #A0A098
 
 .leaflet-left
   .leaflet-controllable-image-overlay
@@ -58,7 +78,7 @@
       border-bottom-right-radius: 4px
       border-left: 1px solid #ccc
 
-      input
+      li:last-child a
         border-top-right-radius: 4px
         border-bottom-right-radius: 4px
 

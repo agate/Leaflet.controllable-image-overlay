@@ -72,6 +72,14 @@ module.exports = (grunt) ->
           }
         ]
 
+    watch:
+      coffee:
+        files: 'src/*.coffee'
+        tasks: [ 'coffee' ]
+      sass:
+        files: 'src/*.sass'
+        tasks: [ 'sass' ]
+
   grunt.loadNpmTasks 'grunt-contrib-clean'
   grunt.loadNpmTasks 'grunt-contrib-coffee'
   grunt.loadNpmTasks 'grunt-contrib-sass'
@@ -79,6 +87,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks 'grunt-contrib-cssmin'
   grunt.loadNpmTasks 'grunt-contrib-copy'
   grunt.loadNpmTasks 'grunt-banner'
+  grunt.loadNpmTasks 'grunt-contrib-watch'
 
   grunt.registerTask 'default', [
     'clean'

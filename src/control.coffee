@@ -27,10 +27,17 @@ L.Control.ControllableImageOverlay = L.Control.extend
     @_transparentButton = @_createButton 'T', 'Transparent image', className + '-transparent',  @_container, @_enableTransparent, @
 
     @_imageForm = L.DomUtil.create('ul', className + '-actions', @_container)
-    item = L.DomUtil.create('li', '', @_imageForm)
-    @_imageUrl = L.DomUtil.create('input', '', item)
+
+    urlItem   = L.DomUtil.create('li', '', @_imageForm)
+    resetItem = L.DomUtil.create('li', '', @_imageForm)
+    removeItem = L.DomUtil.create('li', '', @_imageForm)
+
+    @_imageUrl = L.DomUtil.create('input', '', urlItem)
     @_imageUrl.placeholder = 'Fill your image url in here'
     @_initElementEvents(@_imageUrl)
+
+    @_resetButton  = @_createButton 'Reset', 'Reset image', '',  resetItem, @_resetImage, @
+    @_removeButton  = @_createButton 'Remove', 'Remove image', '',  removeItem, @_removeImage, @
 
     L.DomUtil.addClass(@_rotateButton, 'leaflet-disabled')
     L.DomUtil.addClass(@_scaleButton, 'leaflet-disabled')
@@ -67,6 +74,7 @@ L.Control.ControllableImageOverlay = L.Control.extend
       @_changeImageEnabled = true
       @_enterMode('image')
       L.DomUtil.addClass(@_container, 'actions-shown')
+      setTimeout((=> @_imageUrl.focus()), 10)
 
   _enableRotate: (e) ->
     if @_isDisabled(@_rotateButton)
@@ -119,6 +127,27 @@ L.Control.ControllableImageOverlay = L.Control.extend
       @_imageTransparentEnabled = true
       @_enterMode('transparent')
       @_map.fire('image:transparent:enabled')
+
+  _resetImage: (e) ->
+    @_changeImageEnabled = false
+
+    @_imageUrl.value = @options.image || ''
+    L.DomUtil.removeClass(@_container, 'actions-shown')
+    @_map.fire('image:reset')
+
+    if @_overlay._image
+      @_exitMode('image')
+
+  _removeImage: (e) ->
+    @_changeImageEnabled = false
+
+    L.DomUtil.removeClass(@_container, 'actions-shown')
+
+    @_imageUrl.value = ''
+    @options.image = ''
+    @_map.fire('image:remove')
+
+    @_enterMode('image')
 
   _createButton: (html, title, className, container, fn, context) ->
     link = L.DomUtil.create('a', className, container)

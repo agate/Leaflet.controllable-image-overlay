@@ -2,8 +2,6 @@ L.ControllableImageOverlay = L.Class.extend
   includes: L.Mixin.Events
 
   options:
-    opacity: 1
-
     imageRotate: 0
     imageOpacity: 1
     imageScale: 1
@@ -13,67 +11,62 @@ L.ControllableImageOverlay = L.Class.extend
 
   onAdd: (map) ->
     @_map = map
-
-    map.on('image:changed', @_eventImageChanged, @)
-
-  _eventImageChanged: ->
-    @options.imageRotate = 0
-    @options.imageOpacity = 1
-    @options.imageScale = 1
-    @options.image = @_control.options.image
-    @_initImage()
+    map.on('image:changed', @_resetImage, @)
 
   _onImageAdded: ->
-    map = @_map
+    @_map.getPanes().overlayPane.appendChild(@_image)
+    @_map.on('viewreset', @_reset, @)
 
-    map._panes.overlayPane.appendChild(@_image)
+    if @_map.options.zoomAnimation && L.Browser.any3d
+      @_map.on('zoomanim', @_animateZoom, @)
 
-    map.on('viewreset', @_reset, @)
-
-    if map.options.zoomAnimation && L.Browser.any3d
-      map.on('zoomanim', @_animateZoom, @)
-
-    map.on('image:rotate:enabled', (->
+    @_map.on('image:rotate:enabled', (->
       L.DomEvent.on(@_image, 'mousedown', @_rotateStart, @)
       L.DomEvent.on(@_image, 'mousemove', @_rotating, @)
       L.DomEvent.on(@_image, 'mouseout', @_rotateEnd, @)
       L.DomEvent.on(@_image, 'mouseup', @_rotateEnd, @)
     ), @)
-    map.on('image:rotate:disabled', (->
+    @_map.on('image:rotate:disabled', (->
       L.DomEvent.off(@_image, 'mousedown', @_rotateStart, @)
       L.DomEvent.off(@_image, 'mousemove', @_rotating, @)
       L.DomEvent.off(@_image, 'mouseout', @_rotateEnd, @)
       L.DomEvent.off(@_image, 'mouseup', @_rotateEnd, @)
     ), @)
-    map.on('image:scale:enabled', (->
+    @_map.on('image:scale:enabled', (->
       L.DomEvent.on(@_image, 'mousedown', @_scaleStart, @)
       L.DomEvent.on(@_image, 'mousemove', @_scaling, @)
       L.DomEvent.on(@_image, 'mouseout', @_scaleEnd, @)
       L.DomEvent.on(@_image, 'mouseup', @_scaleEnd, @)
     ), @)
-    map.on('image:scale:disabled', (->
+    @_map.on('image:scale:disabled', (->
       L.DomEvent.off(@_image, 'mousedown', @_scaleStart, @)
       L.DomEvent.off(@_image, 'mousemove', @_scaling, @)
       L.DomEvent.off(@_image, 'mouseout', @_scaleEnd, @)
       L.DomEvent.off(@_image, 'mouseup', @_scaleEnd, @)
     ), @)
-    map.on('image:move:enabled', (->
+    @_map.on('image:move:enabled', (->
       L.DomEvent.on(@_image, 'mousedown', @_moveStart, @)
       L.DomEvent.on(@_image, 'mousemove', @_moving, @)
       L.DomEvent.on(@_image, 'mouseout', @_moveEnd, @)
       L.DomEvent.on(@_image, 'mouseup', @_moveEnd, @)
     ), @)
-    map.on('image:move:disabled', (->
+    @_map.on('image:move:disabled', (->
       L.DomEvent.off(@_image, 'mousedown', @_moveStart, @)
       L.DomEvent.off(@_image, 'mousemove', @_moving, @)
       L.DomEvent.off(@_image, 'mouseout', @_moveEnd, @)
       L.DomEvent.off(@_image, 'mouseup', @_moveEnd, @)
     ), @)
-    map.on('image:transparent:enabled', (->
+    @_map.on('image:transparent:enabled', (->
       L.DomEvent.on(@_image, 'mousewheel', @_transparent, @)
     ), @)
-    map.on('image:transparent:disabled', (->
+    @_map.on('image:transparent:disabled', (->
       L.DomEvent.off(@_image, 'mousewheel', @_transparent, @)
+    ), @)
+    @_map.on('image:reset', (->
+      @_resetImage()
+    ), @)
+    @_map.on('image:remove', (->
+      @_removeImage()
     ), @)
 
     @_reset()
@@ -182,20 +175,14 @@ L.ControllableImageOverlay = L.Class.extend
     @_reset()
 
   onRemove: (map) ->
-    map.getPanes().overlayPane.removeChild(@_image)
+    @_removeImage()
 
-    map.off('viewreset', @_reset, @)
-
+    @_map.off('image:changed', @_resetImage, @)
     if map.options.zoomAnimation
       map.off('zoomanim', @_animateZoom, @)
 
   addTo: (map) ->
     map.addLayer(@)
-    return @
-
-  setOpacity: (opacity) ->
-    @options.opacity = opacity
-    @_updateOpacity()
     return @
 
   # TODO remove bringToFront/bringToBack duplication from TileLayer/Path
@@ -211,14 +198,13 @@ L.ControllableImageOverlay = L.Class.extend
     return @
 
   setUrl: (url) ->
-    @options.image = url
     @_image.src = url
 
   getAttribution: ->
     return @options.attribution
 
   _initImage: ->
-    if !@options.image
+    if !@_control.options.image
       return
 
     if !@_image
@@ -229,20 +215,16 @@ L.ControllableImageOverlay = L.Class.extend
       else
         L.DomUtil.addClass(@_image, 'leaflet-zoom-hide')
 
-      @_updateOpacity()
-
       # TODO createImage util method to remove duplication
       L.extend @_image,
         galleryimg: 'no',
         onselectstart: L.Util.falseFn,
         onmousemove: L.Util.falseFn,
         onload: L.bind(@_onImageLoad, @),
-        src: @options.image
-
-      @_onImageAdded()
+        src: @_control.options.image
 
     else
-      @_image.src = @options.image
+      @_image.src = @_control.options.image
 
   _animateZoom: (e) ->
     map = @_map
@@ -258,6 +240,27 @@ L.ControllableImageOverlay = L.Class.extend
     image.style[L.DomUtil.TRANSFORM] = L.DomUtil.getTranslateString(origin) +
                                        ' scale(' + scale * @imageScale + ')' +
                                        ' rotate(' + @options.imageRotate + ')'
+
+  _resetOptions: ->
+    @options.imageRotate = 0
+    @options.imageOpacity = 1
+    @options.imageScale = 1
+
+  _resetImage: ->
+    @_resetOptions()
+    @_initImage()
+    @_resetImageBounds =>
+      @_reset()
+
+  _removeImage: ->
+    @_resetOptions()
+
+    if @_image
+      @_map.getPanes().overlayPane.removeChild(@_image)
+
+    @_map.off('viewreset', @_reset, @)
+
+    @_image = null
 
   _reset: ->
     if !@_imageLoaded
@@ -276,17 +279,13 @@ L.ControllableImageOverlay = L.Class.extend
     image.style[L.DomUtil.TRANSFORM] += ' scale(' + @options.imageScale+ ')'
     image.style[L.DomUtil.TRANSFORM] += ' rotate(' + @options.imageRotate + 'deg)'
 
-  _onImageLoad: ->
-    self = @
-    map = @_map
+  _resetImageBounds: (cb) ->
+    @_getImageInfo @_control.options.image, (info) =>
+      @_imageLoaded = true
 
-    @fire('load')
-    @_getImageInfo @options.image, (info) ->
-      self._imageLoaded = true
-
-      bounds = map.getBounds()
-      ne = map.latLngToContainerPoint(bounds.getNorthEast())
-      sw = map.latLngToContainerPoint(bounds.getSouthWest())
+      bounds = @_map.getBounds()
+      ne = @_map.latLngToContainerPoint(bounds.getNorthEast())
+      sw = @_map.latLngToContainerPoint(bounds.getSouthWest())
       width = ne.x - sw.x
       height = sw.y - ne.y
       centerX = width / 2
@@ -294,15 +293,20 @@ L.ControllableImageOverlay = L.Class.extend
 
       if info.width > info.height
         displayHeight = centerX / info.width * info.height
-        tr = map.containerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2))
-        bl = map.containerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2))
+        tr = @_map.containerPointToLatLng(L.point(3 / 4 * width, centerY - displayHeight / 2))
+        bl = @_map.containerPointToLatLng(L.point(1 / 4 * width, centerY + displayHeight / 2))
       else
         displayWidth = centerY / info.height * info.width / 2
-        tr = map.containerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height))
-        bl = map.containerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height))
+        tr = @_map.containerPointToLatLng(L.point(centerX + displayWidth / 2, 1 / 4 * height))
+        bl = @_map.containerPointToLatLng(L.point(centerX - displayWidth / 2, 3 / 4 * height))
 
-      self._bounds = L.latLngBounds([bl, tr])
-      self._reset()
+      @_bounds = L.latLngBounds([bl, tr])
+      cb()
+
+  _onImageLoad: ->
+    @fire('load')
+    @_resetImageBounds =>
+      @_onImageAdded()
 
   _getImageInfo: (imgUrl, callback) ->
     img = new Image()
@@ -311,9 +315,6 @@ L.ControllableImageOverlay = L.Class.extend
       callback
         width: img.width,
         height: img.height
-
-  _updateOpacity: ->
-    L.DomUtil.setOpacity(@_image, @options.opacity)
 
 L.controllableImageOverlay = (url, bounds, options) ->
   return new L.ControllableImageOverlay(url, bounds, options)
