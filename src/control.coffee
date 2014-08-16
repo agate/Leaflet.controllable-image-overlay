@@ -12,6 +12,7 @@ L.Control.ControllableImageOverlay = L.Control.extend
   initialize: (options) ->
     L.Control.prototype.initialize.call(@, options)
     @_overlay = L.controllableImageOverlay(@)
+    @_tooltip = L.controllableImageOverlayTooltip(@)
 
   onAdd: (map) ->
     className = 'leaflet-controllable-image-overlay'
@@ -45,9 +46,13 @@ L.Control.ControllableImageOverlay = L.Control.extend
     L.DomUtil.addClass(@_transparentButton, 'leaflet-disabled')
 
     @_overlay.addTo(map)
+    @_tooltip.addTo(map)
+
     @_container
 
   onRemove: (map) ->
+    @_overlay.removeFrom(map)
+    @_tooltip.removeFrom(map)
 
   onImageChanged: ->
     L.DomUtil.removeClass(@_rotateButton, 'leaflet-disabled')
@@ -84,10 +89,15 @@ L.Control.ControllableImageOverlay = L.Control.extend
       @_imageRotateEnabled = false
       @_exitMode('rotate')
       @_map.fire('image:rotate:disabled')
+      @_tooltip.disable()
     else
       @_imageRotateEnabled = true
       @_enterMode('rotate')
       @_map.fire('image:rotate:enabled')
+      @_tooltip.enable('Drag overlay image to rotate it.', {
+        x: e.clientX
+        y: e.clientY
+      })
 
   _enableScale: (e) ->
     if @_isDisabled(@_scaleButton)
@@ -97,10 +107,15 @@ L.Control.ControllableImageOverlay = L.Control.extend
       @_imageScaleEnabled = false
       @_exitMode('scale')
       @_map.fire('image:scale:disabled')
+      @_tooltip.disable()
     else
       @_imageScaleEnabled = true
       @_enterMode('scale')
       @_map.fire('image:scale:enabled')
+      @_tooltip.enable('Drag overlay image to resize it.', {
+        x: e.clientX
+        y: e.clientY
+      })
 
   _enableMove: (e) ->
     if @_isDisabled(@_moveButton)
@@ -110,10 +125,15 @@ L.Control.ControllableImageOverlay = L.Control.extend
       @_imageMoveEnabled = false
       @_exitMode('move')
       @_map.fire('image:move:disabled')
+      @_tooltip.disable()
     else
       @_imageMoveEnabled = true
       @_enterMode('move')
       @_map.fire('image:move:enabled')
+      @_tooltip.enable('Drag overlay image to move its position.', {
+        x: e.clientX
+        y: e.clientY
+      })
 
   _enableTransparent: (e) ->
     if @_isDisabled(@_transparentButton)
@@ -123,10 +143,12 @@ L.Control.ControllableImageOverlay = L.Control.extend
       @_imageTransparentEnabled = false
       @_exitMode('transparent')
       @_map.fire('image:transparent:disabled')
+      @_tooltip.disable()
     else
       @_imageTransparentEnabled = true
       @_enterMode('transparent')
       @_map.fire('image:transparent:enabled')
+      @_tooltip.enable('Wheel your mouse on the overlay image to change its opacity.')
 
   _resetImage: (e) ->
     @_changeImageEnabled = false

@@ -23,6 +23,7 @@ module.exports = (grunt) ->
           'dist/leaflet.controllable-image-overlay.js': [
             'src/control.coffee'
             'src/overlay.coffee'
+            'src/tooltip.coffee'
           ]
 
     sass:

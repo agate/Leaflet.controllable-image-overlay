@@ -1,5 +1,5 @@
 /*
- * Leaflet.controllable-image-overlay v0.3.0
+ * Leaflet.controllable-image-overlay v0.4.0
  * 
  * A plugin to Leaflet powered maps that:
  * 1. allow you to put an image above the map.
@@ -19,7 +19,8 @@
     },
     initialize: function(options) {
       L.Control.prototype.initialize.call(this, options);
-      return this._overlay = L.controllableImageOverlay(this);
+      this._overlay = L.controllableImageOverlay(this);
+      return this._tooltip = L.controllableImageOverlayTooltip(this);
     },
     onAdd: function(map) {
       var className, removeItem, resetItem, urlItem;
@@ -45,9 +46,13 @@
       L.DomUtil.addClass(this._moveButton, 'leaflet-disabled');
       L.DomUtil.addClass(this._transparentButton, 'leaflet-disabled');
       this._overlay.addTo(map);
+      this._tooltip.addTo(map);
       return this._container;
     },
-    onRemove: function(map) {},
+    onRemove: function(map) {
+      this._overlay.removeFrom(map);
+      return this._tooltip.removeFrom(map);
+    },
     onImageChanged: function() {
       L.DomUtil.removeClass(this._rotateButton, 'leaflet-disabled');
       L.DomUtil.removeClass(this._scaleButton, 'leaflet-disabled');
@@ -88,11 +93,16 @@
       if (this._imageRotateEnabled) {
         this._imageRotateEnabled = false;
         this._exitMode('rotate');
-        return this._map.fire('image:rotate:disabled');
+        this._map.fire('image:rotate:disabled');
+        return this._tooltip.disable();
       } else {
         this._imageRotateEnabled = true;
         this._enterMode('rotate');
-        return this._map.fire('image:rotate:enabled');
+        this._map.fire('image:rotate:enabled');
+        return this._tooltip.enable('Drag overlay image to rotate it.', {
+          x: e.clientX,
+          y: e.clientY
+        });
       }
     },
     _enableScale: function(e) {
@@ -102,11 +112,16 @@
       if (this._imageScaleEnabled) {
         this._imageScaleEnabled = false;
         this._exitMode('scale');
-        return this._map.fire('image:scale:disabled');
+        this._map.fire('image:scale:disabled');
+        return this._tooltip.disable();
       } else {
         this._imageScaleEnabled = true;
         this._enterMode('scale');
-        return this._map.fire('image:scale:enabled');
+        this._map.fire('image:scale:enabled');
+        return this._tooltip.enable('Drag overlay image to resize it.', {
+          x: e.clientX,
+          y: e.clientY
+        });
       }
     },
     _enableMove: function(e) {
@@ -116,11 +131,16 @@
       if (this._imageMoveEnabled) {
         this._imageMoveEnabled = false;
         this._exitMode('move');
-        return this._map.fire('image:move:disabled');
+        this._map.fire('image:move:disabled');
+        return this._tooltip.disable();
       } else {
         this._imageMoveEnabled = true;
         this._enterMode('move');
-        return this._map.fire('image:move:enabled');
+        this._map.fire('image:move:enabled');
+        return this._tooltip.enable('Drag overlay image to move its position.', {
+          x: e.clientX,
+          y: e.clientY
+        });
       }
     },
     _enableTransparent: function(e) {
@@ -130,11 +150,13 @@
       if (this._imageTransparentEnabled) {
         this._imageTransparentEnabled = false;
         this._exitMode('transparent');
-        return this._map.fire('image:transparent:disabled');
+        this._map.fire('image:transparent:disabled');
+        return this._tooltip.disable();
       } else {
         this._imageTransparentEnabled = true;
         this._enterMode('transparent');
-        return this._map.fire('image:transparent:enabled');
+        this._map.fire('image:transparent:enabled');
+        return this._tooltip.enable('Wheel your mouse on the overlay image to change its opacity.');
       }
     },
     _resetImage: function(e) {
@@ -220,8 +242,8 @@
       imageOpacity: 1,
       imageScale: 1
     },
-    initialize: function(control) {
-      this._control = control;
+    initialize: function(_control) {
+      this._control = _control;
       return this._wheelEventName = this._getWheelEventName();
     },
     onAdd: function(map) {
@@ -298,12 +320,17 @@
     _rotateStart: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
+      this._control._tooltip.disable();
       this._imageRotating = true;
       return this._imageRotateDiff = this._getMouseImageRotate(e) - this.options.imageRotate;
     },
     _rotateEnd: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
+      this._control._tooltip.enable('Drag overlay image to rotate it.', {
+        x: e.clientX,
+        y: e.clientY
+      });
       return this._imageRotating = false;
     },
     _rotating: function(e) {
@@ -327,6 +354,7 @@
     _scaleStart: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
+      this._control._tooltip.disable();
       this._imageScaling = true;
       this._imageScalingInitScale = this.options.imageScale;
       return this._imageScalingInitPoint = {
@@ -337,6 +365,10 @@
     _scaleEnd: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
+      this._control._tooltip.enable('Drag overlay image to resize it.', {
+        x: e.clientX,
+        y: e.clientY
+      });
       return this._imageScaling = false;
     },
     _scaling: function(e) {
@@ -362,12 +394,17 @@
     _moveStart: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
+      this._control._tooltip.disable();
       this._imageMovingEvent = e;
       return this._imageMoving = true;
     },
     _moveEnd: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
+      this._control._tooltip.enable('Drag overlay image to move its position.', {
+        x: e.clientX,
+        y: e.clientY
+      });
       return this._imageMoving = false;
     },
     _moving: function(e) {
@@ -554,6 +591,67 @@
 
   L.controllableImageOverlay = function(url, bounds, options) {
     return new L.ControllableImageOverlay(url, bounds, options);
+  };
+
+}).call(this);
+
+(function() {
+  L.ControllableImageOverlayTooltip = L.Class.extend({
+    baseClassName: 'leaflet-controllable-image-overlay-tooltip',
+    initialize: function(_control) {
+      this._control = _control;
+    },
+    addTo: function(_map) {
+      this._map = _map;
+      this._popupPane = this._map._panes.popupPane;
+      this._container = L.DomUtil.create('div', this.baseClassName, this._popupPane);
+      return this._singleLineLabel = false;
+    },
+    onRemove: function(map) {
+      this.disable();
+      this._popupPane.removeChild(this._container);
+      return this._container = null;
+    },
+    enable: function(labelText, position) {
+      if (labelText) {
+        this.updateContent(labelText);
+      }
+      L.DomUtil.addClass(this._container, "" + this.baseClassName + "-shown");
+      this._map.on('mousemove', this._onMouseMove, this);
+      if (position) {
+        return this.updatePosition(position);
+      }
+    },
+    disable: function() {
+      L.DomUtil.removeClass(this._container, "" + this.baseClassName + "-shown");
+      return this._map.off('mousemove', this._onMouseMove, this);
+    },
+    updateContent: function(labelText) {
+      this._container.innerHTML = labelText;
+      return this;
+    },
+    _onMouseMove: function(e) {
+      var pos;
+      pos = this._map.latLngToLayerPoint(e.latlng);
+      return this.updatePosition(pos);
+    },
+    updatePosition: function(position) {
+      this._container.style.visibility = 'inherit';
+      L.DomUtil.setPosition(this._container, position);
+      return this;
+    },
+    showAsError: function() {
+      L.DomUtil.addClass(this._container, "" + this.baseClassName + "-error");
+      return this;
+    },
+    removeError: function() {
+      L.DomUtil.removeClass(this._container, "" + this.baseClassName + "-error");
+      return this;
+    }
+  });
+
+  L.controllableImageOverlayTooltip = function(control) {
+    return new L.ControllableImageOverlayTooltip(control);
   };
 
 }).call(this);

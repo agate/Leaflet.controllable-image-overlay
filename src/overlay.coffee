@@ -6,8 +6,7 @@ L.ControllableImageOverlay = L.Class.extend
     imageOpacity: 1
     imageScale: 1
 
-  initialize: (control) ->
-    @_control = control
+  initialize: (@_control) ->
     @_wheelEventName = @_getWheelEventName()
 
   onAdd: (map) ->
@@ -89,12 +88,17 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
+    @_control._tooltip.disable()
     @_imageRotating = true
     @_imageRotateDiff = @_getMouseImageRotate(e) - @options.imageRotate
   _rotateEnd: (e) ->
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
+    @_control._tooltip.enable('Drag overlay image to rotate it.', {
+      x: e.clientX
+      y: e.clientY
+    })
     @_imageRotating = false
   _rotating: (e) ->
     if !@_imageRotating
@@ -119,6 +123,7 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
+    @_control._tooltip.disable()
     @_imageScaling = true
     @_imageScalingInitScale = @options.imageScale
     @_imageScalingInitPoint =
@@ -128,6 +133,10 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
+    @_control._tooltip.enable('Drag overlay image to resize it.', {
+      x: e.clientX
+      y: e.clientY
+    })
     @_imageScaling = false
   _scaling: (e) ->
     if !@_imageScaling
@@ -155,12 +164,17 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
+    @_control._tooltip.disable()
     @_imageMovingEvent = e
     @_imageMoving = true
   _moveEnd: (e) ->
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
+    @_control._tooltip.enable('Drag overlay image to move its position.', {
+      x: e.clientX
+      y: e.clientY
+    })
     @_imageMoving = false
   _moving: (e) ->
     if !@_imageMoving
@@ -184,7 +198,6 @@ L.ControllableImageOverlay = L.Class.extend
       @_map.layerPointToLatLng(sw),
       @_map.layerPointToLatLng(ne)
     )
-
 
     @_imageMovingEvent = e
     @_reset()
