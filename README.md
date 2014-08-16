@@ -1,4 +1,4 @@
-# Leaflet Controllable Image Overlay
+# Leaflet Controllable Image Overlay Plugin
 
 ## Demo
 
@@ -10,3 +10,15 @@ Click [here](http://rawgit.com/agate/Leaflet.controllable-image-overlay/master/d
 npm insatll
 grunt
 ```
+
+## To see what has changed in recent versions
+
+See the [CHANGELOG](https://github.com/agate/Leaflet.controllable-image-overlay/blob/master/CHANGELOG.md)
+
+### Troubleshooting
+
+You can fire [ISSUES](https://github.com/agate/Leaflet.controllable-image-overlay/issues) to report bugs or ask questions.
+
+### Contributing
+
+You can send [PULL REQUESTS](https://github.com/agate/Leaflet.controllable-image-overlay/pulls) for your new ideas or bug fixings to us.
