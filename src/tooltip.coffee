@@ -28,12 +28,17 @@ L.ControllableImageOverlayTooltip = L.Class.extend
     return @
 
   _onMouseMove: (e) ->
-    pos = @_map.latLngToLayerPoint(e.latlng)
-    @updatePosition(pos)
+    @updatePosition
+      x: e.originalEvent.clientX
+      y: e.originalEvent.clientY
 
   updatePosition: (position) ->
+    mapClientRect = @_map._container.getBoundingClientRect()
     @_container.style.visibility = 'inherit'
-    L.DomUtil.setPosition(@_container, position)
+    L.DomUtil.setPosition(@_container, {
+      x: position.x - mapClientRect.left
+      y: position.y - mapClientRect.top
+    })
     return @
 
   showAsError: ->

@@ -1,5 +1,5 @@
 /*
- * Leaflet.controllable-image-overlay v0.4.0
+ * Leaflet.controllable-image-overlay v0.4.1
  * 
  * A plugin to Leaflet powered maps that:
  * 1. allow you to put an image above the map.
@@ -631,13 +631,19 @@
       return this;
     },
     _onMouseMove: function(e) {
-      var pos;
-      pos = this._map.latLngToLayerPoint(e.latlng);
-      return this.updatePosition(pos);
+      return this.updatePosition({
+        x: e.originalEvent.clientX,
+        y: e.originalEvent.clientY
+      });
     },
     updatePosition: function(position) {
+      var mapClientRect;
+      mapClientRect = this._map._container.getBoundingClientRect();
       this._container.style.visibility = 'inherit';
-      L.DomUtil.setPosition(this._container, position);
+      L.DomUtil.setPosition(this._container, {
+        x: position.x - mapClientRect.left,
+        y: position.y - mapClientRect.top
+      });
       return this;
     },
     showAsError: function() {
