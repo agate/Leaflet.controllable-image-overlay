@@ -95,10 +95,8 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
-    @_control._tooltip.enable('Drag overlay image to rotate it.', {
-      x: e.clientX
-      y: e.clientY
-    })
+    @_control._tooltip.enable('Drag overlay image to rotate it.',
+                              @_map.mouseEventToLayerPoint(e))
     @_imageRotating = false
   _rotating: (e) ->
     if !@_imageRotating
@@ -133,10 +131,8 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
-    @_control._tooltip.enable('Drag overlay image to resize it.', {
-      x: e.clientX
-      y: e.clientY
-    })
+    @_control._tooltip.enable('Drag overlay image to resize it.',
+                              @_map.mouseEventToLayerPoint(e))
     @_imageScaling = false
   _scaling: (e) ->
     if !@_imageScaling
@@ -171,10 +167,8 @@ L.ControllableImageOverlay = L.Class.extend
     L.DomEvent.stopPropagation(e)
     L.DomEvent.preventDefault(e)
 
-    @_control._tooltip.enable('Drag overlay image to move its position.', {
-      x: e.clientX
-      y: e.clientY
-    })
+    @_control._tooltip.enable('Drag overlay image to move its position.',
+                              @_map.mouseEventToLayerPoint(e))
     @_imageMoving = false
   _moving: (e) ->
     if !@_imageMoving

@@ -13,11 +13,11 @@ L.ControllableImageOverlayTooltip = L.Class.extend
     @_popupPane.removeChild(@_container)
     @_container = null
 
-  enable: (labelText, position) ->
+  enable: (labelText, layerPoint) ->
     @updateContent(labelText) if labelText
     L.DomUtil.addClass(@_container, "#{@baseClassName}-shown")
     @_map.on('mousemove', @._onMouseMove, @)
-    @updatePosition(position) if position
+    @updatePosition(layerPoint) if layerPoint
 
   disable: ->
     L.DomUtil.removeClass(@_container, "#{@baseClassName}-shown")
@@ -28,17 +28,11 @@ L.ControllableImageOverlayTooltip = L.Class.extend
     return @
 
   _onMouseMove: (e) ->
-    @updatePosition
-      x: e.originalEvent.clientX
-      y: e.originalEvent.clientY
+    @updatePosition(@_map.mouseEventToLayerPoint(e.originalEvent))
 
-  updatePosition: (position) ->
-    mapClientRect = @_map._container.getBoundingClientRect()
+  updatePosition: (layerPoint) ->
     @_container.style.visibility = 'inherit'
-    L.DomUtil.setPosition(@_container, {
-      x: position.x - mapClientRect.left
-      y: position.y - mapClientRect.top
-    })
+    L.DomUtil.setPosition(@_container, layerPoint)
     return @
 
   showAsError: ->

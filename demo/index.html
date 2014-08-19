@@ -11,14 +11,30 @@
         margin: 0;
       }
 
+      h1, h2, h3, h4 {
+        text-align: center;
+      }
+
+      #image-urls {
+        text-align: center;
+      }
+      #image-urls li {
+        list-style-type: none;
+      }
+
       #map {
         margin: 0 auto;
-        width: 800px;
-        height: 600px;
+        width: 80%;
+        height: 500px;
       }
     </style>
   </head>
   <body>
+    <h2>Test Images</h2>
+    <ul id="image-urls">
+      <li>http://ua-architects.com/wp-content/uploads/2012/12/10_Kish-Mall_Floor-Plan.jpg</li>
+    </ul>
+
     <div id="map"></div>
 
     <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>

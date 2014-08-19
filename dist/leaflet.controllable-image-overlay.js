@@ -1,5 +1,5 @@
 /*
- * Leaflet.controllable-image-overlay v0.4.1
+ * Leaflet.controllable-image-overlay v0.4.2
  * 
  * A plugin to Leaflet powered maps that:
  * 1. allow you to put an image above the map.
@@ -327,10 +327,7 @@
     _rotateEnd: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
-      this._control._tooltip.enable('Drag overlay image to rotate it.', {
-        x: e.clientX,
-        y: e.clientY
-      });
+      this._control._tooltip.enable('Drag overlay image to rotate it.', this._map.mouseEventToLayerPoint(e));
       return this._imageRotating = false;
     },
     _rotating: function(e) {
@@ -365,10 +362,7 @@
     _scaleEnd: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
-      this._control._tooltip.enable('Drag overlay image to resize it.', {
-        x: e.clientX,
-        y: e.clientY
-      });
+      this._control._tooltip.enable('Drag overlay image to resize it.', this._map.mouseEventToLayerPoint(e));
       return this._imageScaling = false;
     },
     _scaling: function(e) {
@@ -401,10 +395,7 @@
     _moveEnd: function(e) {
       L.DomEvent.stopPropagation(e);
       L.DomEvent.preventDefault(e);
-      this._control._tooltip.enable('Drag overlay image to move its position.', {
-        x: e.clientX,
-        y: e.clientY
-      });
+      this._control._tooltip.enable('Drag overlay image to move its position.', this._map.mouseEventToLayerPoint(e));
       return this._imageMoving = false;
     },
     _moving: function(e) {
@@ -612,14 +603,14 @@
       this._popupPane.removeChild(this._container);
       return this._container = null;
     },
-    enable: function(labelText, position) {
+    enable: function(labelText, layerPoint) {
       if (labelText) {
         this.updateContent(labelText);
       }
       L.DomUtil.addClass(this._container, "" + this.baseClassName + "-shown");
       this._map.on('mousemove', this._onMouseMove, this);
-      if (position) {
-        return this.updatePosition(position);
+      if (layerPoint) {
+        return this.updatePosition(layerPoint);
       }
     },
     disable: function() {
@@ -631,19 +622,11 @@
       return this;
     },
     _onMouseMove: function(e) {
-      return this.updatePosition({
-        x: e.originalEvent.clientX,
-        y: e.originalEvent.clientY
-      });
+      return this.updatePosition(this._map.mouseEventToLayerPoint(e.originalEvent));
     },
-    updatePosition: function(position) {
-      var mapClientRect;
-      mapClientRect = this._map._container.getBoundingClientRect();
+    updatePosition: function(layerPoint) {
       this._container.style.visibility = 'inherit';
-      L.DomUtil.setPosition(this._container, {
-        x: position.x - mapClientRect.left,
-        y: position.y - mapClientRect.top
-      });
+      L.DomUtil.setPosition(this._container, layerPoint);
       return this;
     },
     showAsError: function() {

@@ -1,6 +1,13 @@
 ## TODO
 
   * add rails gem support
+  * improve auto bounding function
+
+## 0.4.2
+
+Bugfixes:
+
+  * fix tooltip position problem by using mouseEventToLayerPoint function
 
 ## 0.4.1
 
