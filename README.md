@@ -1,4 +1,4 @@
-# Leaflet Controllable Image Overlay Plugin
+# Leaflet Controllable Image Overlay Plugin [![Built with Grunt](https://cdn.gruntjs.com/builtwith.png)](http://gruntjs.com/)
 
 ## Demo
 
