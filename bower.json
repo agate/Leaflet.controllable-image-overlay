@@ -1,0 +1,29 @@
+{
+  "name": "Leaflet.controllable-image-overlay",
+  "version": "0.4.2",
+  "homepage": "https://github.com/agate/Leaflet.controllable-image-overlay",
+  "authors": [
+    "agate <agate.hao@gmail.com>"
+  ],
+  "description": "Controllable Image Overlay For Leaflet",
+  "keywords": [
+    "leaflet",
+    "overlay"
+  ],
+  "main": [
+    "dist/leaflet.controllable-image-overlay.css",
+    "dist/leaflet.controllable-image-overlay.min.css",
+    "dist/leaflet.controllable-image-overlay.js",
+    "dist/leaflet.controllable-image-overlay.min.js",
+    "dist/leaflet.controllable-image-overlay.disable.png",
+    "dist/leaflet.controllable-image-overlay.enable.png"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
